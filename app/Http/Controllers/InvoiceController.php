@@ -8,9 +8,23 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\PdfService;
+use App\Services\EmailService;
+use App\Services\WhatsAppService;
 
 class InvoiceController extends Controller
 {
+    protected $pdfService;
+    protected $emailService;
+    protected $whatsappService;
+
+    public function __construct(PdfService $pdfService, EmailService $emailService, WhatsAppService $whatsappService)
+    {
+        $this->pdfService = $pdfService;
+        $this->emailService = $emailService;
+        $this->whatsappService = $whatsappService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -37,10 +51,13 @@ class InvoiceController extends Controller
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
+            'po_number' => 'nullable|string|max:100',
+            'is_taxable' => 'nullable|boolean',
             'invoice_date' => 'required|date',
             'due_date' => 'nullable|date',
             'status' => 'required|in:Unpaid,Partial,Paid',
             'items' => 'required|array|min:1',
+            'items.*.item_code' => 'nullable|string|max:100',
             'items.*.description' => 'required|string',
             'items.*.qty' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
@@ -54,12 +71,15 @@ class InvoiceController extends Controller
                 $subtotal += $item['qty'] * $item['price'];
             }
 
-            $tax = $subtotal * 0.11;
+            $isTaxable = $request->boolean('is_taxable');
+            $tax = $isTaxable ? ($subtotal * 0.11) : 0;
             $total = $subtotal + $tax;
 
             $invoice = Invoice::create([
                 'invoice_no' => $this->generateInvoiceNumber(),
+                'po_number' => $request->po_number,
                 'customer_id' => $request->customer_id,
+                'is_taxable' => $isTaxable,
                 'invoice_date' => $request->invoice_date,
                 'due_date' => $request->due_date,
                 'subtotal' => $subtotal,
@@ -70,6 +90,7 @@ class InvoiceController extends Controller
 
             foreach ($request->items as $item) {
                 $invoice->items()->create([
+                    'item_code' => $item['item_code'] ?? null,
                     'description' => $item['description'],
                     'qty' => $item['qty'],
                     'price' => $item['price'],
@@ -112,10 +133,13 @@ class InvoiceController extends Controller
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
+            'po_number' => 'nullable|string|max:100',
+            'is_taxable' => 'nullable|boolean',
             'invoice_date' => 'required|date',
             'due_date' => 'nullable|date',
             'status' => 'required|in:Unpaid,Partial,Paid',
             'items' => 'required|array|min:1',
+            'items.*.item_code' => 'nullable|string|max:100',
             'items.*.description' => 'required|string',
             'items.*.qty' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
@@ -129,11 +153,14 @@ class InvoiceController extends Controller
                 $subtotal += $item['qty'] * $item['price'];
             }
 
-            $tax = $subtotal * 0.11;
+            $isTaxable = $request->boolean('is_taxable');
+            $tax = $isTaxable ? ($subtotal * 0.11) : 0;
             $total = $subtotal + $tax;
 
             $invoice->update([
                 'customer_id' => $request->customer_id,
+                'po_number' => $request->po_number,
+                'is_taxable' => $isTaxable,
                 'invoice_date' => $request->invoice_date,
                 'due_date' => $request->due_date,
                 'subtotal' => $subtotal,
@@ -146,6 +173,7 @@ class InvoiceController extends Controller
             $invoice->items()->delete();
             foreach ($request->items as $item) {
                 $invoice->items()->create([
+                    'item_code' => $item['item_code'] ?? null,
                     'description' => $item['description'],
                     'qty' => $item['qty'],
                     'price' => $item['price'],
@@ -179,7 +207,7 @@ class InvoiceController extends Controller
     {
         $year = date('Y');
         $prefix = "INV/HNET/{$year}/";
-        
+
         $lastInvoice = Invoice::where('invoice_no', 'like', $prefix . '%')
             ->orderBy('invoice_no', 'desc')
             ->first();
@@ -194,21 +222,87 @@ class InvoiceController extends Controller
         return $prefix . $newNumber;
     }
 
+    // Generate PDF view (same as quotation)
     public function generatePdf(Invoice $invoice)
     {
-        // Placeholder for PDF generation
-        return "PDF generation for Invoice " . $invoice->invoice_no;
+        $invoice->load(['customer', 'items']);
+        return view('invoices.pdf-preview', compact('invoice'));
     }
 
-    public function sendEmail(Invoice $invoice)
+    // Download PDF
+    public function downloadPdf(Invoice $invoice)
     {
-        // Placeholder for Email sending
-        return "Email sending for Invoice " . $invoice->invoice_no;
+        $invoice->load(['customer', 'items']);
+        $safeFilename = str_replace(['/', '\\'], '-', $invoice->invoice_no . ' ' . $invoice->customer->company_name . '.pdf');
+        return $this->pdfService->download(
+            'pdf.invoice',
+            ['invoice' => $invoice],
+            $safeFilename
+        );
     }
 
+    // Stream PDF in browser
+    public function printPdf(Invoice $invoice)
+    {
+        $invoice->load(['customer', 'items']);
+        $safeFilename = str_replace(['/', '\\'], '-', $invoice->invoice_no . ' ' . $invoice->customer->company_name . '.pdf');
+        return $this->pdfService->stream(
+            'pdf.invoice',
+            ['invoice' => $invoice],
+            $safeFilename
+        );
+    }
+
+    // Send email with PDF attachment (mirroring quotation)
+    public function sendEmail(Request $request, Invoice $invoice)
+    {
+        $validated = $request->validate([
+            'to' => 'required|email',
+            'cc' => 'nullable|email',
+            'subject' => 'required|string|max:255',
+            'body' => 'required|string',
+        ]);
+
+        try {
+            $invoice->load(['customer', 'items']);
+            $filePath = $this->pdfService->save(
+                'pdf.invoice',
+                ['invoice' => $invoice],
+                'invoice_' . $invoice->invoice_no . '.pdf'
+            );
+            $this->emailService->sendWithAttachment(
+                $validated['to'],
+                $validated['subject'],
+                nl2br($validated['body']),
+                $filePath,
+                'Invoice-' . $invoice->invoice_no . '.pdf'
+            );
+            return back()->with('success', 'Email berhasil dikirim ke ' . $validated['to']);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+        }
+    }
+
+    // Send WhatsApp with PDF link (mirroring quotation)
     public function sendWhatsApp(Invoice $invoice)
     {
-        // Placeholder for WhatsApp sending
-        return "WhatsApp sending for Invoice " . $invoice->invoice_no;
+        try {
+            $invoice->load(['customer', 'items']);
+            $filePath = $this->pdfService->save(
+                'pdf.invoice',
+                ['invoice' => $invoice],
+                'invoice_' . $invoice->invoice_no . '.pdf'
+            );
+            $fileUrl = asset('storage/' . $filePath);
+            $message = 'Kepada Yth. ' . $invoice->customer->pic_name . ', berikut invoice dari kami: ' . $fileUrl;
+            $this->whatsappService->sendWithFile(
+                $invoice->customer->phone,
+                $message,
+                $fileUrl
+            );
+            return back()->with('success', 'WhatsApp berhasil dikirim ke ' . $invoice->customer->phone);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengirim WhatsApp: ' . $e->getMessage());
+        }
     }
 }

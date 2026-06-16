@@ -13,15 +13,7 @@
     }
 
     .header {
-        text-align: center;
         margin-bottom: 20px;
-        border-bottom: 2px solid #2563EB;
-        padding-bottom: 10px;
-    }
-
-    .header h1 {
-        color: #2563EB;
-        margin: 0;
     }
 
     .title {
@@ -122,8 +114,36 @@
 
 <body>
     <div class="header">
-        <h1>HNet Solution</h1>
-        <p>Solusi Jaringan & IT Terpercaya</p>
+        @php
+        $logoPath = public_path('storage/img/hnetlogo.png');
+        $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
+        $stampPath = public_path('storage/img/stamphnet.png');
+        $stampData = file_exists($stampPath) ? base64_encode(file_get_contents($stampPath)) : '';
+        @endphp
+        <table width="100%">
+            <tr>
+                <td width="20%" style="vertical-align: top;">
+                    @if($logoData)
+                    <img src="data:image/png;base64,{{ $logoData }}" style="height: 80px;">
+                    @endif
+                </td>
+                <td width="80%" style="vertical-align: top; text-align: left; padding-left: 10px;">
+                    <div style="font-size: 22px; font-weight: bold; margin-bottom: 5px;">
+                        <span style="color: #2563EB;">Hnet</span> Solution
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 5px;">
+                        Penyedia layanan pembuatan Aplikasi Perusahaan, NAS, pemasangan jaringan LAN, CCTV, Data Center
+                        dll.
+                    </div>
+                    <div style="font-size: 12px; font-weight: bold;">
+                        Email: <span style="color: #2563EB;">muhamadhabib.work@gmail.com</span><br>
+                        Telp: <span style="color: #2563EB;">+62 877-8146-6447</span><br>
+                        www.hnet-digital.biz.id
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div style="border-bottom: 3px solid #000; margin-top: 10px;"></div>
     </div>
 
     <div class="title">
@@ -132,12 +152,35 @@
     </div>
 
     <div class="content">
-        <p>Pada hari ini, <strong>{{ \Carbon\Carbon::parse($beritaAcara->tanggal)->translatedFormat('l') }}</strong>
+        <p>Pada hari ini,
+            <strong>{{ \Carbon\Carbon::parse($beritaAcara->tanggal)->locale('id')->translatedFormat('l') }}</strong>
             tanggal <strong>{{ \Carbon\Carbon::parse($beritaAcara->tanggal)->translatedFormat('d') }}</strong>
-            bulan <strong>{{ \Carbon\Carbon::parse($beritaAcara->tanggal)->translatedFormat('F') }}</strong>
+            bulan
+            <strong>{{ \Carbon\Carbon::parse($beritaAcara->tanggal)->locale('id')->translatedFormat('F') }}</strong>
             tahun <strong>{{ \Carbon\Carbon::parse($beritaAcara->tanggal)->translatedFormat('Y') }}</strong>,
-            kami yang bertanda tangan di bawah ini:</p>
+            kami yang bertanda tangan di bawah ini:
+        </p>
 
+        <p><strong>Pihak Pertama (Pelaksana):</strong></p>
+        <table width="100%" style="margin-left: 20px; margin-bottom: 20px;">
+            <tr>
+                <td width="30%">Nama Perusahaan</td>
+                <td width="5%">:</td>
+                <td>Hnet Solution</td>
+            </tr>
+            <tr>
+                <td width="30%">Nama PIC</td>
+                <td width="5%">:</td>
+                <td>Muhamad Habib</td>
+            </tr>
+            <tr>
+                <td>Alamat</td>
+                <td>:</td>
+                <td>Jl. Al Huda Rt02/rw 09 No.107, Kp. Rawasapi, Kel Jatimulya, Tambun Selatan, Bekasi</td>
+            </tr>
+        </table>
+
+        <p><strong>Pihak Kedua (Klien):</strong></p>
         <table width="100%" style="margin-left: 20px; margin-bottom: 20px;">
             <tr>
                 <td width="30%">Nama Instansi / Perusahaan</td>
@@ -168,10 +211,16 @@
 
     <table class="signature">
         <tr>
-            <td width="50%">
+            <td width="50%" style="position: relative;">
                 Pihak Pertama,<br>
-                <strong>HNet Solution</strong><br><br><br><br><br>
-                ( .................................... )
+                <strong>Hnet Solution</strong><br>
+                <div style="position: relative; height: 60px;">
+                    @if($stampData)
+                    <img src="data:image/png;base64,{{ $stampData }}"
+                        style="position: absolute; width: 180px; left: 50%; margin-left: -60px; top: -30px; opacity: 0.8; z-index: 10;">
+                    @endif
+                </div>
+                ( Muhamad Habib )
             </td>
             <td width="50%">
                 Pihak Kedua,<br>
@@ -294,7 +343,7 @@
     @endif
 
     <div class="footer">
-        HNet Solution CRM - Berita Acara Otomatis
+        Generated otomatically by HNet Solution App
     </div>
 </body>
 

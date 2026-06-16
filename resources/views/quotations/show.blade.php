@@ -268,7 +268,7 @@
 Terlampir penawaran harga dari kami.
 
 Hormat kami,
-Admin HNet Solution</textarea>
+Admin HNET DIGITAL</textarea>
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 mt-6">

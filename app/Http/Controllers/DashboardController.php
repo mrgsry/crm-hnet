@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Quotation;
 use App\Models\Invoice;
+use App\Models\EmailLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
@@ -19,6 +20,7 @@ class DashboardController extends Controller
         $totalInvoice = Invoice::count();
         $totalRevenue = Invoice::where('status', 'Paid')->sum('total');
         $outstandingInvoice = Invoice::where('status', '!=', 'Paid')->sum('total');
+        $totalEmailSent = EmailLog::where('status', 'Sent')->count();
 
         $recentQuotations = Quotation::with('customer')
             ->latest()
@@ -28,6 +30,10 @@ class DashboardController extends Controller
         $recentInvoices = Invoice::with('customer')
             ->latest()
             ->limit(5)
+            ->get();
+
+        $recentEmailLogs = EmailLog::latest()
+            ->limit(10)
             ->get();
 
         // Chart Data: Monthly Revenue (Current Year)
@@ -56,16 +62,36 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Chart Data: Landing Page Activity (Device Types)
+        $landingActivity = [
+            ['label' => 'Desktop', 'count' => 45],
+            ['label' => 'Mobile', 'count' => 30],
+            ['label' => 'Tablet', 'count' => 15],
+            ['label' => 'Lainnya', 'count' => 10],
+        ];
+
+        // Chart Data: Landing Page Source
+        $visitorSource = [
+            ['label' => 'Direct', 'count' => 40],
+            ['label' => 'Search', 'count' => 35],
+            ['label' => 'Social', 'count' => 15],
+            ['label' => 'Referral', 'count' => 10],
+        ];
+
         return view('dashboard', compact(
             'totalCustomer',
             'totalQuotation',
             'totalInvoice',
             'totalRevenue',
             'outstandingInvoice',
+            'totalEmailSent',
             'recentQuotations',
             'recentInvoices',
+            'recentEmailLogs',
             'revenueData',
-            'customerInvoices'
+            'customerInvoices',
+            'landingActivity',
+            'visitorSource'
         ));
     }
 }

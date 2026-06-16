@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_no', 100)->unique();
+            $table->string('po_number')->nullable(); // New field for Nomor PO
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->date('invoice_date');
             $table->date('due_date')->nullable();

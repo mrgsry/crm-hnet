@@ -12,15 +12,7 @@
     }
 
     .header {
-        text-align: center;
         margin-bottom: 20px;
-        border-bottom: 2px solid #2563EB;
-        padding-bottom: 10px;
-    }
-
-    .header h1 {
-        color: #2563EB;
-        margin: 0;
     }
 
     .info {
@@ -76,8 +68,36 @@
 
 <body>
     <div class="header">
-        <h1>HNet Solution</h1>
-        <p>Solusi Jaringan & IT Terpercaya</p>
+        @php
+        $logoPath = public_path('storage/img/hnetlogo.png');
+        $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : '';
+        $stampPath = public_path('storage/img/stamphnet.png');
+        $stampData = file_exists($stampPath) ? base64_encode(file_get_contents($stampPath)) : '';
+        @endphp
+        <table width="100%">
+            <tr>
+                <td width="20%" style="vertical-align: top;">
+                    @if($logoData)
+                    <img src="data:image/png;base64,{{ $logoData }}" style="height: 80px;">
+                    @endif
+                </td>
+                <td width="80%" style="vertical-align: top; text-align: left; padding-left: 10px;">
+                    <div style="font-size: 22px; font-weight: bold; margin-bottom: 5px;">
+                        <span style="color: #2563EB;">Hnet</span> Solution
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 5px;">
+                        Penyedia layanan pembuatan Aplikasi Perusahaan, NAS, pemasangan jaringan LAN, CCTV, Data Center
+                        dll.
+                    </div>
+                    <div style="font-size: 12px; font-weight: bold;">
+                        Email: <span style="color: #2563EB;">muhamadhabib.work@gmail.com</span><br>
+                        Telp: <span style="color: #2563EB;">+62 877-8146-6447</span><br>
+                        www.hnet-digital.biz.id
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div style="border-bottom: 3px solid #000; margin-top: 10px;"></div>
     </div>
 
     <table class="info">
@@ -128,10 +148,12 @@
                 <td>Discount</td>
                 <td style="text-align: right;">-{{ number_format($quotation->discount, 2) }}</td>
             </tr>
+            @if($quotation->is_taxable)
             <tr>
                 <td>Tax (11%)</td>
                 <td style="text-align: right;">{{ number_format($quotation->tax, 2) }}</td>
             </tr>
+            @endif
             <tr style="font-weight: bold; font-size: 14px; border-top: 1px solid #333;">
                 <td>Grand Total</td>
                 <td style="text-align: right;">{{ number_format($quotation->total, 2) }}</td>
@@ -143,16 +165,22 @@
         <table width="100%">
             <tr>
                 <td width="70%"></td>
-                <td width="30%" style="text-align: center;">
-                    Hormat Kami,<br><br><br><br><br>
-                    <strong>Admin HNet</strong>
+                <td width="30%" style="text-align: center; position: relative;">
+                    Hormat Kami,<br><br>
+                    <div style="position: relative; height: 60px;">
+                        @if($stampData)
+                        <img src="data:image/png;base64,{{ $stampData }}"
+                            style="position: absolute; width: 180px; left: 50%; margin-left: -60px; top: -30px; opacity: 0.8; z-index: 10;">
+                        @endif
+                    </div>
+                    <strong>Muhamad Habib</strong>
                 </td>
             </tr>
         </table>
     </div>
 
     <div class="footer">
-        HNet Solution CRM - Penawaran Harga Otomatis
+        Generated otomatically by HNet Solution App
     </div>
 </body>
 

@@ -239,7 +239,7 @@ Terlampir Berita Acara {{ $beritaAcara->jenis }} untuk pekerjaan yang telah dila
 Terima kasih atas kerjasamanya.
 
 Hormat kami,
-HNet Solution</textarea>
+Admin HNET DIGITAL</textarea>
                         </div>
                         <div class="flex justify-end gap-2">
                             <button type="button" onclick="closeEmailModal()"

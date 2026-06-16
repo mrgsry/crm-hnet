@@ -41,9 +41,10 @@ Route::middleware('auth')->group(function () {
 
     // Invoices
     Route::resource('invoices', InvoiceController::class);
+    Route::get('invoices/{invoice}/pdf/print', [InvoiceController::class, 'printPdf'])->name('invoices.printPdf');
     Route::post('invoices/{invoice}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
     Route::post('invoices/{invoice}/email', [InvoiceController::class, 'sendEmail'])->name('invoices.email');
-    Route::post('invoices/{invoice}/wa', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.wa');
+    Route::post('invoices/{invoice}/wa', [InvoiceController::class, 'sendWhatsApp'])->name('invoices.sendWhatsApp');
 
     // Berita Acara
     Route::resource('berita-acara', BeritaAcaraController::class);

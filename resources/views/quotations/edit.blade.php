@@ -7,8 +7,9 @@
 
     <div class="py-12" x-data="quotationForm()" id="quotation-data"
         data-items="{{ $quotation->items->map(fn($item) => ['description' => $item->description, 'qty' => $item->qty, 'price' => $item->price])->toJson() }}"
-        data-discount="{{ $quotation->discount }}" data-subtotal="{{ $quotation->subtotal }}"
-        data-tax="{{ $quotation->tax }}" data-total="{{ $quotation->total }}">
+        data-discount="{{ $quotation->discount }}" data-is-taxable="{{ $quotation->is_taxable ? 'true' : 'false' }}"
+        data-subtotal="{{ $quotation->subtotal }}" data-tax="{{ $quotation->tax }}"
+        data-total="{{ $quotation->total }}">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <form action="{{ route('quotations.update', $quotation) }}" method="POST">
                 @csrf
@@ -159,15 +160,13 @@
                                         <span class="text-sm text-gray-600">Subtotal</span>
                                         <span class="text-sm font-semibold" x-text="formatCurrency(subtotal)"></span>
                                     </div>
-                                    <div class="space-y-1">
-                                        <x-input-label for="discount" :value="__('Potongan Harga (Discount)')"
-                                            class="text-xs" />
-                                        <x-text-input id="discount" name="discount" type="number"
-                                            x-model.number="discount" @input="calculateTotal()"
-                                            class="block w-full text-sm text-right" placeholder="0" />
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm text-gray-600">PPN (11%)</span>
+                                    <div class="flex justify-between items-center">
+                                        <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                            <input type="checkbox" name="is_taxable" value="1" x-model="isTaxable"
+                                                @change="calculateTotal()"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            PPN (11%)
+                                        </label>
                                         <span class="text-sm font-semibold" x-text="formatCurrency(tax)"></span>
                                     </div>
                                     <div class="pt-3 border-t flex justify-between">
@@ -199,6 +198,7 @@
         const el = document.getElementById('quotation-data');
         return {
             items: JSON.parse(el.dataset.items),
+            isTaxable: el.dataset.isTaxable === 'true',
             discount: parseFloat(el.dataset.discount),
             subtotal: parseFloat(el.dataset.subtotal),
             tax: parseFloat(el.dataset.tax),
@@ -216,7 +216,7 @@
             },
             calculateTotal() {
                 this.subtotal = this.items.reduce((sum, item) => sum + (item.qty * item.price), 0);
-                this.tax = (this.subtotal - this.discount) * 0.11;
+                this.tax = this.isTaxable ? ((this.subtotal - this.discount) * 0.11) : 0;
                 if (this.tax < 0) this.tax = 0;
                 this.total = this.subtotal - this.discount + this.tax;
             },

@@ -14,6 +14,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" type="image/png" href="{{ asset('storage/img/hnetlogo.png') }}">
 </head>
 
 <body class="font-sans antialiased">
@@ -25,10 +26,11 @@
                 :class="{ '-translate-x-full': !open, 'translate-x-0': open }">
                 <div class="flex flex-col h-full">
                     <!-- Logo / Brand -->
-                    <div class="flex items-center justify-between p-5 border-b border-gray-200">
+                    <div class="flex items-center gap-3 p-5 border-b border-gray-200">
+                        <img src="{{ asset('storage/img/hnetlogo.png') }}" alt="Logo" class="w-8 h-8 object-contain">
                         <h1 class="text-xl font-bold text-indigo-600">{{ config('app.name', 'HNet Solution CRM') }}</h1>
                         <!-- Close button for mobile -->
-                        <button @click="open = false" class="lg:hidden p-2 text-gray-500 hover:text-gray-700">
+                        <button @click="open = false" class="lg:hidden p-2 text-gray-500 hover:text-gray-700 ml-auto">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
@@ -100,7 +102,10 @@
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
                 <!-- Mobile Menu Button -->
                 <div class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
-                    <h1 class="text-xl font-bold text-indigo-600">{{ config('app.name', 'HNet Solution CRM') }}</h1>
+                    <div class="flex items-center gap-2">
+                        <img src="{{ asset('storage/img/hnetlogo.png') }}" alt="Logo" class="w-8 h-8 object-contain">
+                        <h1 class="text-xl font-bold text-indigo-600">{{ config('app.name', 'HNet Solution CRM') }}</h1>
+                    </div>
                     <button @click="open = !open" class="p-2 text-gray-500 hover:text-gray-700">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

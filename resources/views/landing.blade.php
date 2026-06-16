@@ -185,6 +185,21 @@
         </div>
     </section>
 
+    <!-- Activity Insights Section -->
+    <section id="activity-insights" class="py-24 px-6 bg-gray-50">
+        <div class="container mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Aktivitas Pengunjung</h2>
+                <p class="text-gray-600 mt-2">Ringkasan perangkat dan perilaku pengunjung situs.</p>
+            </div>
+            <div class="flex justify-center">
+                <div class="relative w-full max-w-xs h-[250px]">
+                    <canvas id="landingActivityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Packages Section -->
     <section id="packages" class="py-24 px-6 bg-white">
         <div class="container mx-auto">
@@ -345,6 +360,36 @@
         link.addEventListener('click', () => {
             mobileMenu.classList.add('hidden');
         });
+    });
+    // Activity Monitoring Donut Chart
+    const activityCtx = document.getElementById('landingActivityChart').getContext('2d');
+    const activityData = JSON.parse('{!! json_encode($activityData ?? []) !!}');
+    new Chart(activityCtx, {
+        type: 'doughnut',
+        data: {
+            labels: activityData.map(item => item.label),
+            datasets: [{
+                data: activityData.map(item => item.count),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
     });
     </script>
 </body>

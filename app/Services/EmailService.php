@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Mail;
+use App\Models\EmailLog;
+use Exception;
 
 class EmailService
 {
@@ -11,15 +13,30 @@ class EmailService
      */
     public function sendWithAttachment($to, $subject, $body, $attachmentPath, $attachmentName)
     {
-        Mail::send([], [], function ($message) use ($to, $subject, $body, $attachmentPath, $attachmentName) {
-            $message->to($to)
-                ->subject($subject)
-                ->html($body)
-                ->attach(storage_path('app/public/' . $attachmentPath), [
-                    'as' => $attachmentName,
-                    'mime' => 'application/pdf',
-                ]);
-        });
+        try {
+            Mail::send([], [], function ($message) use ($to, $subject, $body, $attachmentPath, $attachmentName) {
+                $message->to($to)
+                    ->subject($subject)
+                    ->html($body)
+                    ->attach(storage_path('app/public/' . $attachmentPath), [
+                        'as' => $attachmentName,
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+
+            EmailLog::create([
+                'recipient' => $to,
+                'document' => $subject,
+                'status' => 'Sent'
+            ]);
+        } catch (Exception $e) {
+            EmailLog::create([
+                'recipient' => $to,
+                'document' => $subject,
+                'status' => 'Failed'
+            ]);
+            throw $e;
+        }
     }
 
     /**
@@ -27,10 +44,25 @@ class EmailService
      */
     public function send($to, $subject, $body)
     {
-        Mail::send([], [], function ($message) use ($to, $subject, $body) {
-            $message->to($to)
-                ->subject($subject)
-                ->html($body);
-        });
+        try {
+            Mail::send([], [], function ($message) use ($to, $subject, $body) {
+                $message->to($to)
+                    ->subject($subject)
+                    ->html($body);
+            });
+
+            EmailLog::create([
+                'recipient' => $to,
+                'document' => $subject,
+                'status' => 'Sent'
+            ]);
+        } catch (Exception $e) {
+            EmailLog::create([
+                'recipient' => $to,
+                'document' => $subject,
+                'status' => 'Failed'
+            ]);
+            throw $e;
+        }
     }
 }

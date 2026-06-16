@@ -59,6 +59,7 @@ class QuotationController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'quotation_date' => 'required|date',
+            'is_taxable' => 'nullable|boolean',
             'discount' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -75,13 +76,15 @@ class QuotationController extends Controller
             }
 
             $discount = $request->discount ?? 0;
-            $tax = ($subtotal - $discount) * 0.11; // PPN 11%
+            $isTaxable = $request->boolean('is_taxable');
+            $tax = $isTaxable ? (($subtotal - $discount) * 0.11) : 0; // PPN 11%
             $total = $subtotal - $discount + $tax;
 
             $quotation = Quotation::create([
                 'quotation_no' => Quotation::generateNumber(),
                 'customer_id' => $request->customer_id,
                 'quotation_date' => $request->quotation_date,
+                'is_taxable' => $isTaxable,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'tax' => $tax,
@@ -126,6 +129,7 @@ class QuotationController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'quotation_date' => 'required|date',
+            'is_taxable' => 'nullable|boolean',
             'discount' => 'nullable|numeric|min:0',
             'status' => 'required|in:Draft,Sent,Approved,Rejected',
             'items' => 'required|array|min:1',
@@ -143,12 +147,14 @@ class QuotationController extends Controller
             }
 
             $discount = $request->discount ?? 0;
-            $tax = ($subtotal - $discount) * 0.11;
+            $isTaxable = $request->boolean('is_taxable');
+            $tax = $isTaxable ? (($subtotal - $discount) * 0.11) : 0;
             $total = $subtotal - $discount + $tax;
 
             $quotation->update([
                 'customer_id' => $request->customer_id,
                 'quotation_date' => $request->quotation_date,
+                'is_taxable' => $isTaxable,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'tax' => $tax,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BeritaAcara;
 use App\Models\BeritaAcaraAttachment;
 use App\Models\Customer;
+use App\Models\EmailLog;
 use App\Mail\BeritaAcaraMail;
 use App\Services\PdfService;
 use Illuminate\Http\Request;
@@ -277,6 +278,12 @@ class BeritaAcaraController extends Controller
                 $filename
             ));
 
+            EmailLog::create([
+                'recipient' => $validated['email'],
+                'document' => $validated['subject'],
+                'status' => 'Sent'
+            ]);
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -290,6 +297,12 @@ class BeritaAcaraController extends Controller
             \Illuminate\Support\Facades\Log::error('Failed to send Berita Acara email', [
                 'error' => $e->getMessage(),
                 'berita_acara_id' => $beritaAcara->id
+            ]);
+
+            EmailLog::create([
+                'recipient' => $request->input('email', 'Unknown'),
+                'document' => $request->input('subject', 'Berita Acara Email'),
+                'status' => 'Failed'
             ]);
 
             if ($request->ajax()) {

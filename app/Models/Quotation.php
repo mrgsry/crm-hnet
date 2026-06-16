@@ -13,6 +13,7 @@ class Quotation extends Model
         'customer_id',
         'quotation_date',
         'subtotal',
+        'is_taxable',
         'discount',
         'tax',
         'total',

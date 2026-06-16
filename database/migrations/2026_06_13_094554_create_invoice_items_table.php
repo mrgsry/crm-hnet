@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoice_items', function (Blueprint $table) {
-            $table->id();
+Schema::create('invoice_items', function (Blueprint $table) {
+    $table->id();
+    $table->string('item_code')->nullable(); // New field for Kode barang
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
             $table->text('description');
             $table->integer('qty')->default(1);

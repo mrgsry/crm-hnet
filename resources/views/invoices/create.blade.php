@@ -40,6 +40,14 @@
                                     </div>
 
                                     <div>
+                                        <x-input-label for="po_number" :value="__('Nomor PO')" />
+                                        <x-text-input id="po_number" name="po_number" type="text"
+                                            class="block mt-1 w-full" :value="old('po_number')"
+                                            placeholder="Masukkan nomor PO" />
+                                        <x-input-error :messages="$errors->get('po_number')" class="mt-2" />
+                                    </div>
+
+                                    <div>
                                         <x-input-label for="invoice_date" :value="__('Tanggal')" />
                                         <x-text-input id="invoice_date" name="invoice_date" type="date"
                                             class="block mt-1 w-full" :value="old('invoice_date', date('Y-m-d'))"
@@ -88,6 +96,9 @@
                                         <thead>
                                             <tr>
                                                 <th
+                                                    class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase w-32">
+                                                    Kode Barang</th>
+                                                <th
                                                     class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                                                     Deskripsi</th>
                                                 <th
@@ -105,6 +116,12 @@
                                         <tbody class="divide-y divide-gray-200">
                                             <template x-for="(item, index) in items" :key="index">
                                                 <tr>
+                                                    <td class="px-2 py-2">
+                                                        <input :name="'items['+index+'][item_code]'"
+                                                            x-model="item.item_code" type="text"
+                                                            class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                                                            placeholder="Kode">
+                                                    </td>
                                                     <td class="px-2 py-2">
                                                         <input :name="'items['+index+'][description]'"
                                                             x-model="item.description" type="text"
@@ -160,8 +177,13 @@
                                         <span class="text-sm text-gray-600">Subtotal</span>
                                         <span class="text-sm font-semibold" x-text="formatCurrency(subtotal)"></span>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-sm text-gray-600">PPN (11%)</span>
+                                    <div class="flex justify-between items-center">
+                                        <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                            <input type="checkbox" name="is_taxable" value="1" x-model="isTaxable"
+                                                @change="calculateTotal()"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                            PPN (11%)
+                                        </label>
                                         <span class="text-sm font-semibold" x-text="formatCurrency(tax)"></span>
                                     </div>
                                     <div class="pt-3 border-t flex justify-between">
@@ -192,15 +214,18 @@
     function invoiceForm() {
         return {
             items: [{
+                item_code: '',
                 description: '',
                 qty: 1,
                 price: 0
             }],
+            isTaxable: true,
             subtotal: 0,
             tax: 0,
             total: 0,
             addItem() {
                 this.items.push({
+                    item_code: '',
                     description: '',
                     qty: 1,
                     price: 0
@@ -212,7 +237,7 @@
             },
             calculateTotal() {
                 this.subtotal = this.items.reduce((sum, item) => sum + (item.qty * item.price), 0);
-                this.tax = this.subtotal * 0.11;
+                this.tax = this.isTaxable ? (this.subtotal * 0.11) : 0;
                 this.total = this.subtotal + this.tax;
             },
             formatCurrency(value) {
