@@ -117,11 +117,16 @@
                 Tanggal: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d F Y') }}<br>
                 Jatuh Tempo:
                 {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d F Y') : '-' }}<br>
-                Status: {{ $invoice->status }}
+
             </td>
         </tr>
     </table>
 
+    <p>
+        Yth. Bapak/Ibu, <br>
+        Berikut kami sampaikan invoice/tagihan atas pekerjaan dan/atau layanan yang telah diberikan dengan rincian
+        sebagai berikut:
+    </p>
     <table class="items">
         <thead>
             <tr>
@@ -153,7 +158,7 @@
             </tr>
             @if($invoice->is_taxable)
             <tr>
-                <td>Tax (11%)</td>
+                <td>Tax / Pajak</td>
                 <td style="text-align: right;">{{ number_format($invoice->tax, 2) }}</td>
             </tr>
             @endif
@@ -198,7 +203,7 @@
         </ol>
     </div>
 
-    <div style="margin-top: 50px;">
+    <div style="margin-top: 80px;">
         <table width="100%">
             <tr>
                 <td width="70%"></td>
@@ -217,7 +222,7 @@
     </div>
 
     <div class="footer">
-        Generated otomatically by HNet Solution App
+        This document was generated automatically by the HNet Solution App
     </div>
 </body>
 

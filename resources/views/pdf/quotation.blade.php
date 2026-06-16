@@ -117,6 +117,14 @@
         </tr>
     </table>
 
+    <p>
+
+
+        Yth. Bapak/Ibu, <br>
+        Dengan hormat, bersama ini kami sampaikan penawaran harga atas pekerjaan, suku cadang, biaya perbaikan, dan/atau
+        biaya layanan sebagai berikut:
+    </p>
+
     <table class="items">
         <thead>
             <tr>
@@ -161,7 +169,7 @@
         </table>
     </div>
 
-    <div style="margin-top: 100px;">
+    <div style="margin-top: 210px;">
         <table width="100%">
             <tr>
                 <td width="70%"></td>
@@ -180,7 +188,7 @@
     </div>
 
     <div class="footer">
-        Generated otomatically by HNet Solution App
+        This document was generated automatically by the HNet Solution App
     </div>
 </body>
 

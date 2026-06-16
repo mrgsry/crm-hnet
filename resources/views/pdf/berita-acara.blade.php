@@ -343,7 +343,7 @@
     @endif
 
     <div class="footer">
-        Generated otomatically by HNet Solution App
+        This document was generated automatically by the HNet Solution App
     </div>
 </body>
 
